@@ -1,0 +1,26 @@
+### login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser"
+}
+
+### signup
+POST http://localhost:3000/auth/signup/request-otp
+Content-Type: application/json
+
+{
+  "email": "f20231081@hyderabad.bits-pilani.ac.in"
+}
+
+### verify-otp
+POST http://localhost:3000/auth/signup/verify
+Content-Type: application/json
+
+{
+  "name" : "satvik",
+  "email" : "satviksharma345@gmail.com",
+  "password" : "satvik123",
+  "otp" : "317556"
+}

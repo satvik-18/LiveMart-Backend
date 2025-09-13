@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-console.log("Loaded JWT_SECRET:", process.env.JWT_SECRET);
 
 function authMiddleware(req, res, next) {
 	const authHeader = req.headers['authorization'];
