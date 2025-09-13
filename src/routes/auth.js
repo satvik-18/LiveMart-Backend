@@ -65,9 +65,9 @@ router.post('/signup/request-otp', async (req, res) => {
 });
 
 router.post('/signup/verify', async (req, res) => {
-	const { name, email, password, otp } = req.body;
-	if (!name || !email || !password || !otp) {
-		return res.status(400).json({ message: 'Name, email, password, and OTP are required.' });
+	const { name, email, password, role, otp } = req.body;
+	if (!name || !email || !password || !role || !otp) {
+		return res.status(400).json({ message: 'Name, email, password, role, and OTP are required.' });
 	}
 	try {
 
@@ -83,13 +83,13 @@ router.post('/signup/verify', async (req, res) => {
 
 		const hashedPassword = await bcrypt.hash(password, 10);
 		const result = await pool.query(
-			'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
-			[name, email, hashedPassword]
+			'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
+			[name, email, hashedPassword, role]
 		);
 		const user = result.rows[0];
 
-		const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '1h' });
-		res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email } });
+		const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+		res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
 	} catch (err) {
 		console.error('Signup error:', err);
 		res.status(500).json({ message: 'Internal server error.' });
