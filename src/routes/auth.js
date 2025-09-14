@@ -95,6 +95,50 @@ router.post('/signup/verify', async (req, res) => {
 		res.status(500).json({ message: 'Internal server error.' });
 	}
 });
+router.post('/forgot-password/request-otp', async (req, res) => {
+	const { email } = req.body;
+	if (!email) {
+		return res.status(400).json({ message: 'Email is required' });
+	}
+	try {
+		const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+		if (userCheck.rows.length === 0) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		const rate = await OTPService.checkRateLimit(email);
+		if (!rate.allowed) {
+			return res.status(429).json({ message: `Too many OTP requests. Try again in ${rate.resetTime} seconds.` });
+		}
+
+		const otp = OTPService.generateOTP();
+		await OTPService.storeOTP(email, otp);
+		await sendOTPEmail(email, otp);
+		res.json({ message: 'OTP sent to email.' });
+	} catch (err) {
+		console.error('OTP request error:', err);
+		res.status(500).json({ message: 'Internal server error.' });
+	}
+});
+router.post('/forgot-password/verify', async (req, res) => {
+	const { email, newPassword, otp } = req.body;
+	if (!email || !newPassword || !otp) {
+		return res.status(400).json({ message: 'Email, new password, and OTP are required.' });
+	}
+	try {
+		const valid = await OTPService.verifyOTP(email, otp);
+		if (!valid) {
+			return res.status(400).json({ message: 'Invalid or expired OTP.' });
+		}
+
+		const hashedPassword = await bcrypt.hash(newPassword, 10);
+		await pool.query('UPDATE users SET password = $1 WHERE email = $2', [hashedPassword, email]);
+		res.json({ message: 'Password updated successfully.' });
+	} catch (err) {
+		console.error('Password reset error:', err);
+		res.status(500).json({ message: 'Internal server error.' });
+	}
+});
 
 // Protected route
 router.get('/protected', authMiddleware, (req, res) => {

@@ -25,3 +25,21 @@ Content-Type: application/json
   "role" : "retailer",
   "otp" : "415368"
 }
+
+### forgot-password
+POST http://localhost:3000/auth/forgot-password/request-otp
+Content-Type: application/json
+
+{
+  "email": "satviksharma3123@gmail.com"
+}
+
+### verify-forgot-password-otp
+POST http://localhost:3000/auth/forgot-password/verify
+Content-Type: application/json
+
+{
+  "email" : "satviksharma3123@gmail.com",
+  "newPassword" : "lily@1234",
+  "otp" : "480456"
+}
