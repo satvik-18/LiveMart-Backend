@@ -1,0 +1,29 @@
+### get products (retrieve all products)
+
+GET http://localhost:3000/products/home
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNTk3NjY3LCJleHAiOjE3NjA2MDEyNjd9.yBFt3Jd9JOtzpavkQnaSsMicPFbPcNhlfYNagrTKf9s
+
+###
+
+### add product (insert new product)
+
+POST http://localhost:3000/products/products
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNTk3NjY3LCJleHAiOjE3NjA2MDEyNjd9.yBFt3Jd9JOtzpavkQnaSsMicPFbPcNhlfYNagrTKf9s
+
+{
+    "name": "Product 1",
+    "price": 100,
+    "stock": 50,
+    "description": "Description 1"
+}
+
+### delete product (remove a product by ID)
+DELETE http://localhost:3000/products/delete
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNTk3NjY3LCJleHAiOjE3NjA2MDEyNjd9.yBFt3Jd9JOtzpavkQnaSsMicPFbPcNhlfYNagrTKf9s
+
+{
+    "id": 2
+}

@@ -11,7 +11,7 @@ POST http://localhost:3000/auth/signup/request-otp
 Content-Type: application/json
 
 {
-  "email": "satviksharma3123@gmail.com"
+  "email": "chikugoku1601@gmail.com"
 }
 
 ### verify-otp
@@ -19,11 +19,11 @@ POST http://localhost:3000/auth/signup/verify
 Content-Type: application/json
 
 {
-  "name" : "ss",
-  "email" : "satviksharma3123@gmail.com",
+  "name" : "Hog Rider",
+  "email" : "chikugoku1601@gmail.com",
   "password" : "lily@123",
   "role" : "retailer",
-  "otp" : "415368"
+  "otp" : "831170"
 }
 
 ### forgot-password

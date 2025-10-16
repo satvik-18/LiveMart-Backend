@@ -4,12 +4,19 @@ import pool from './src/config/database.js';
 import redis from './src/config/redis.js';
 import { initDB } from './src/scripts/initDB.js';
 import authRoutes from './src/routes/auth.js';
+import productRoutes from './src/routes/products.js';
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 app.use(express.json());
 
 // Mount authentication routes
 app.use('/auth', authRoutes);
+
+// Mount product routes
+app.use('/products', productRoutes);
 
 const PORT = process.env.PORT || 3000;
 
