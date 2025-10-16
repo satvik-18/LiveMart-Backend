@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import pool from '../config/database.js';
 import OTPService from '../services/otpservice.js';
 import sendOTPEmail from '../services/emailService.js';
+import verifyGoogleToken from '../services/oauth.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -136,6 +137,47 @@ router.post('/forgot-password/verify', async (req, res) => {
 		res.json({ message: 'Password updated successfully.' });
 	} catch (err) {
 		console.error('Password reset error:', err);
+		res.status(500).json({ message: 'Internal server error.' });
+	}
+});
+
+router.post('/google-login', async (req, res) => {
+	const { token } = req.body;
+	if (!token) {
+		return res.status(400).json({ message: 'Google token is required.' });
+	}
+	try {
+		const payload = await verifyGoogleToken(token);
+		const { sub: google_id, email, name, picture } = payload;
+
+		// Check if user already exists with this google_id or email
+		const existingUser = await pool.query(
+			'SELECT id, name, email, role FROM users WHERE google_id = $1 OR email = $2',
+			[google_id, email]
+		);
+
+		let user;
+		if (existingUser.rows.length > 0) {
+			// User exists, log them in
+			user = existingUser.rows[0];
+			
+			// Update google_id if user signed up with email but now using Google
+			if (!user.google_id) {
+				await pool.query('UPDATE users SET google_id = $1 WHERE id = $2', [google_id, user.id]);
+			}
+		} else {
+			// New user, create account
+			const result = await pool.query(
+				'INSERT INTO users (name, email, google_id, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
+				[name, email, google_id, 'customer']
+			);
+			user = result.rows[0];
+		}
+
+		const jwtToken = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+		res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+	} catch (err) {
+		console.error('Google login error:', err);
 		res.status(500).json({ message: 'Internal server error.' });
 	}
 });

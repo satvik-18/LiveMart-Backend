@@ -43,3 +43,28 @@ Content-Type: application/json
   "newPassword" : "lily@1234",
   "otp" : "480456"
 }
+### google-oauth (needs real Google token from OAuth Playground)
+POST http://localhost:3000/auth/google-login
+Content-Type: application/json
+
+{
+  "token": "PASTE_YOUR_ACTUAL_GOOGLE_ID_TOKEN_HERE"
+}
+
+###
+
+### google-oauth TEST (use this for development testing)
+POST http://localhost:3000/auth/google-login-test
+Content-Type: application/json
+
+{
+  "email": "testgoogleuser@gmail.com",
+  "name": "Test Google User"
+}
+
+###
+
+### Test: Check if Google user was created
+GET http://localhost:3000/auth/protected
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_FROM_GOOGLE_LOGIN_RESPONSE
