@@ -5,6 +5,7 @@ import redis from './src/config/redis.js';
 import { initDB } from './src/scripts/initDB.js';
 import authRoutes from './src/routes/auth.js';
 import productRoutes from './src/routes/products.js';
+import customerRoutes from './src/routes/customers.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -17,7 +18,7 @@ app.use('/auth', authRoutes);
 
 // Mount product routes
 app.use('/products', productRoutes);
-
+app.use('/customers', customerRoutes);
 const PORT = process.env.PORT || 3000;
 
 (async () => {

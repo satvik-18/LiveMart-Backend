@@ -11,7 +11,7 @@ POST http://localhost:3000/auth/signup/request-otp
 Content-Type: application/json
 
 {
-  "email": "chikugoku1601@gmail.com"
+  "email": "f20231081@hyderabad.bits-pilani.ac.in"
 }
 
 ### verify-otp
@@ -19,11 +19,11 @@ POST http://localhost:3000/auth/signup/verify
 Content-Type: application/json
 
 {
-  "name" : "Hog Rider",
-  "email" : "chikugoku1601@gmail.com",
+  "name" : "Islam Makhachev",
+  "email" : "f20231081@hyderabad.bits-pilani.ac.in",
   "password" : "lily@123",
-  "role" : "retailer",
-  "otp" : "831170"
+  "role" : "wholesaler",
+  "otp" : "905260"
 }
 
 ### forgot-password

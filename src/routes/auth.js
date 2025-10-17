@@ -72,9 +72,19 @@ router.post('/signup/verify', async (req, res) => {
 	}
 	try {
 
-		const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+		const userCheck = await pool.query('SELECT id FROM users WHERE email = $1 OR name = $2', [email, name]);
 		if (userCheck.rows.length > 0) {
-			return res.status(409).json({ message: 'Email already registered.' });
+			const existingUser = userCheck.rows[0];
+			const emailExists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+			const nameExists = await pool.query('SELECT id FROM users WHERE name = $1', [name]);
+			
+			if (emailExists.rows.length > 0 && nameExists.rows.length > 0) {
+				return res.status(409).json({ message: 'Email and name already registered.' });
+			} else if (emailExists.rows.length > 0) {
+				return res.status(409).json({ message: 'Email already registered.' });
+			} else {
+				return res.status(409).json({ message: 'Name already taken.' });
+			}
 		}
 
 		const valid = await OTPService.verifyOTP(email, otp);

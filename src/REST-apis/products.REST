@@ -10,20 +10,53 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc
 
 POST http://localhost:3000/products/products
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNTk3NjY3LCJleHAiOjE3NjA2MDEyNjd9.yBFt3Jd9JOtzpavkQnaSsMicPFbPcNhlfYNagrTKf9s
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJzYXR2aWtzaGFybWEzMTIzQGdtYWlsLmNvbSIsIm5hbWUiOiJDb25vciBNY0dyZWdvciIsInJvbGUiOiJyZXRhaWxlciIsImlhdCI6MTc2MDY4MjU4NywiZXhwIjoxNzYwNjg2MTg3fQ.ZCK6tPEDTP-jdrgwLIoEAIYuP0irjnqivrn4vcy_10o
 
 {
-    "name": "Product 1",
+    "name": "Irealand",
     "price": 100,
     "stock": 50,
+    "product_type": "retail",
+    "description": "Description 1"
+}
+
+### for khabib
+POST http://localhost:3000/products/products
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJzYXR2aWtzaGFybWEzNDVAZ21haWwuY29tIiwibmFtZSI6IktoYWJpYiBOdXJtYWdvbWVkb3YiLCJyb2xlIjoid2hvbGVzYWxlciIsImlhdCI6MTc2MDY4Mjg2OSwiZXhwIjoxNzYwNjg2NDY5fQ.RajKWDawnMTNysUFGsNW9_Bq-22cbPd1WJDjRGuDuvY
+
+{
+    "name": "Dagestan",
+    "price": 100,
+    "stock": 50,
+    "product_type": "wholesale",
     "description": "Description 1"
 }
 
 ### delete product (remove a product by ID)
 DELETE http://localhost:3000/products/delete
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNTk3NjY3LCJleHAiOjE3NjA2MDEyNjd9.yBFt3Jd9JOtzpavkQnaSsMicPFbPcNhlfYNagrTKf9s
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJzYXR2aWtzaGFybWEzNDVAZ21haWwuY29tIiwibmFtZSI6IktoYWJpYiBOdXJtYWdvbWVkb3YiLCJyb2xlIjoid2hvbGVzYWxlciIsImlhdCI6MTc2MDY4Mjg2OSwiZXhwIjoxNzYwNjg2NDY5fQ.RajKWDawnMTNysUFGsNW9_Bq-22cbPd1WJDjRGuDuvY
 
 {
-    "id": 2
+    "id": 10
 }
+
+### Update product (modify product details by ID)
+PATCH http://localhost:3000/products/update
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNjgxMTc5LCJleHAiOjE3NjA2ODQ3Nzl9.mr8WA9sH72BU6OaHbCI2741Ziy9-oq_NzQXD88k8qo4
+
+{
+    "id": 10,
+    "name": "Updated Product 1",
+    "price": 120,
+    "stock": 40,
+    "product_type": "retail",
+    "description": "Updated Description 1"
+}
+
+### get products by seller (retrieve products added by the authenticated user)
+GET http://localhost:3000/products/myproducts
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJzYXR2aWtzaGFybWEzMTIzQGdtYWlsLmNvbSIsIm5hbWUiOiJDb25vciBNY0dyZWdvciIsInJvbGUiOiJyZXRhaWxlciIsImlhdCI6MTc2MDY4MjU4NywiZXhwIjoxNzYwNjg2MTg3fQ.ZCK6tPEDTP-jdrgwLIoEAIYuP0irjnqivrn4vcy_10o
