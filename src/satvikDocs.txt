@@ -1,0 +1,66 @@
+### Backend architecture:
+1. Node.js with Express framework for server-side development.
+2. NeonDB as the primary database for storing user and product data.
+3. Redis for caching frequently accessed data to improve performance.
+4. JWT (JSON Web Tokens) for secure user authentication and session management.
+5. RESTful API design principles for structuring the backend services.
+6. Brevo (formerly Sendinblue) for email services, including sending OTPs and notifications.
+7. TODO: OAuth 2.0 for third-party authentication (e.g., Google Sign-In).
+
+
+(i) Auth Flow:
+    1. Sign Up request: 
+        - User sends a POST request to /signup with email and password.
+        - Server checks if the email already exists in NeonDB.
+        - If not, server generates an OTP and sends it to the user's email using Brevo.
+        - The OTP is stored temporarily in Redis with an expiration time.
+
+    2. OTP Verification:
+        - User sends a POST request to /verify-otp with name, email, password, role, OTP.
+        - Server retrieves the OTP from Redis and compares it with the provided OTP.
+        - If they match, the server hashes the password and creates a new user record in NeonDB.
+        - 2 JWT tokens (access and refresh) are generated and sent to the user.
+    
+    3. Login: (ShaureyaRaj )
+
+    4. Forgot Password:
+        - User sends a POST request to /forgot-password with email.
+        - Server generates an OTP and sends it to the user's email using Brevo.
+        - The OTP is stored temporarily in Redis with an expiration time.
+        - User sends a POST request to /forgot-password/verify with email, new password, OTP.
+        - Server retrieves the OTP from Redis and compares it with the provided OTP.
+        - If they match, the server hashes the new password and updates the user record in NeonDB.
+        - User should be redirected to Login page since there are no tokens generated here.
+
+(ii) Business/ Supply Chain Logic:
+
+    Wholesalers cant buy, they sell only to retailers.
+    Retailers can buy from wholesalers and sell to customers.
+    Customers can only buy.
+    Users cannot change their roles once registered.
+
+    - Product Management: CRUD operations for products, including adding new products, updating product details, and deleting products.
+    - Inventory Management: Tracking stock levels, managing restocks, and handling low-stock alerts.
+    - Order Processing: Handling customer orders, updating order statuses, and managing order history.
+    - User Roles: Differentiating between admin and regular users for access control and permissions.
+    
+    3 separate dashboards for Wholesalers, Retailers and Customers with relevant functionalities.
+    Hence 3 separate routes for each user type.
+
+    2 types of security measures: 
+        1. Backend Checks: Each route checks the user role from the JWT token to ensure only authorized users can access specific functionalities.
+        2. Frontend Checks: The frontend application checks the user role and displays appropriate UI elements based on the user's permissions.
+
+        Frontend should have separate dashboards for each user type to enhance user experience and ensure that users only see functionalities relevant to their roles.
+        which implies the simultaneous existence of 3 different UIs, The names could be same, but since the functionality and business logic requires the 3 different UIs.
+### Note: since the backend also has 3 separate routes, it will require 3 different frontend routes as well.
+
+(iii) DB Schema(as of now):
+    1. Global Users Table: stores all users of all 3 types.
+    2. Global Products Table: stores all products added by wholesalers as well as retailers.
+        -can have 2 separate tables, one for wholesalers and one for retailers, but for simplicity, we can have a single table with a field indicating the seller type.
+    3. Orders Table: stores all orders placed by customers and retailers.
+        -can have 2 tables, retail orders and wholesale orders, but for simplicity, we can have a single table with a field indicating the order type.
+    4. wishlist/favorites table: stores all products added to wishlist by customers.(Implementing wishlist only for customers for now, It'll be Inventory management for retailers and wholesalers later).
+    
+

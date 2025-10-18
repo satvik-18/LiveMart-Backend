@@ -3,8 +3,8 @@ POST http://localhost:3000/auth/login/email
 Content-Type: application/json
 
 {
-  "email": "test@example.com",
-  "password": "TestPass123!"
+  "email": "f20231081@hyderabad.bits-pilani.ac.in",
+  "password": "lily@123"
 }
 
 ### signup

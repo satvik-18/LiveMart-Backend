@@ -6,6 +6,7 @@ import pool from '../config/database.js';
 import OTPService from '../services/otpservice.js';
 import sendOTPEmail from '../services/emailService.js';
 import verifyGoogleToken from '../services/oauth.js';
+import redis from '../config/redis.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -144,8 +145,17 @@ router.post('/signup/verify', async (req, res) => {
 		);
 		const user = result.rows[0];
 
-		const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
-		res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+		const accessToken = jwt.sign({id: user.id, email: user.email, name: user.name, role: user.role}, JWT_SECRET, { expiresIn: '1h' });
+		const refreshToken = jwt.sign({id: user.id, email: user.email, name: user.name, role: user.role}, JWT_SECRET, {expiresIn: '7d'});
+
+		await redis.setex(`refresh_token: ${user.id}`, 7*24*60*60, refreshToken);
+
+		res.status(201).json({
+			accessToken,
+			refreshToken,
+			user:{id: user.id, name: user.name, email: user.email, role: user.role}
+		
+		});
 	} catch (err) {
 		console.error('Signup error:', err);
 		res.status(500).json({ message: 'Internal server error.' });
