@@ -1,9 +1,10 @@
-### login
-POST http://localhost:3000/auth/login
+### Email Login
+POST http://localhost:3000/auth/login/email
 Content-Type: application/json
 
 {
-  "username": "testuser"
+  "email": "test@example.com",
+  "password": "TestPass123!"
 }
 
 ### signup
@@ -68,3 +69,25 @@ Content-Type: application/json
 GET http://localhost:3000/auth/protected
 Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_FROM_GOOGLE_LOGIN_RESPONSE
+
+### Refresh Token
+POST http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN"
+}
+
+### Change Password (requires auth)
+POST http://localhost:3000/auth/change-password
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "currentPassword": "TestPass123!",
+  "newPassword": "NewTestPass123!"
+}
+
+### Logout (requires auth)
+POST http://localhost:3000/auth/logout
+Authorization: Bearer YOUR_ACCESS_TOKEN

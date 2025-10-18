@@ -26,14 +26,59 @@ function authMiddleware(req, res, next) {
 
 const router = express.Router();
 
-// Public login route (no middleware)
-router.post('/login', (req, res) => {
-	const { username } = req.body;
-	if (!username) {
-		return res.status(400).json({ message: 'Username required' });
-	}
-	const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-	res.json({ token });
+// Email/password login route
+router.post('/login/email', async (req, res) => {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    try {
+        // Find user by email
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        const user = result.rows[0];
+        
+        // Verify password
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate tokens
+        const accessToken = jwt.sign(
+            { id: user.id, email: user.email, name: user.name, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        const refreshToken = jwt.sign(
+            { id: user.id },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        // Store refresh token in Redis
+        await redis.setex(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+
+        res.json({
+            accessToken,
+            refreshToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 
@@ -193,6 +238,102 @@ router.post('/google-login', async (req, res) => {
 });
 
 // Protected route
+// Token refresh endpoint
+router.post('/refresh-token', async (req, res) => {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+        return res.status(400).json({ message: 'Refresh token is required' });
+    }
+
+    try {
+        // Verify refresh token
+        const decoded = jwt.verify(refreshToken, JWT_SECRET);
+        
+        // Check if token is in Redis
+        const storedToken = await redis.get(`refresh_token:${decoded.id}`);
+        if (!storedToken || storedToken !== refreshToken) {
+            return res.status(401).json({ message: 'Invalid refresh token' });
+        }
+
+        // Get user data
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const user = result.rows[0];
+
+        // Generate new access token
+        const accessToken = jwt.sign(
+            { id: user.id, email: user.email, name: user.name, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ accessToken });
+    } catch (err) {
+        console.error('Token refresh error:', err);
+        res.status(401).json({ message: 'Invalid refresh token' });
+    }
+});
+
+// Logout endpoint
+router.post('/logout', authMiddleware, async (req, res) => {
+    try {
+        // Remove refresh token from Redis
+        await redis.del(`refresh_token:${req.user.id}`);
+        
+        // Add access token to blacklist
+        const token = req.headers.authorization.split(' ')[1];
+        const decoded = jwt.decode(token);
+        const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+        
+        if (expiresIn > 0) {
+            await redis.setex(`blacklist:${token}`, expiresIn, 'true');
+        }
+
+        res.json({ message: 'Logged out successfully' });
+    } catch (err) {
+        console.error('Logout error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Change password endpoint
+router.post('/change-password', authMiddleware, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Current password and new password are required' });
+    }
+
+    try {
+        // Get user from database
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const user = result.rows[0];
+
+        // Verify current password
+        const validPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: 'Current password is incorrect' });
+        }
+
+        // Hash new password and update
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, user.id]);
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+        console.error('Password change error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 router.get('/protected', authMiddleware, (req, res) => {
 	res.json({ message: 'Access granted', user: req.user });
 });
