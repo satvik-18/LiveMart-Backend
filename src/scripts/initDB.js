@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS orders(
 	quantity INT DEFAULT 1 CHECK (quantity > 0),
 	customer_id INT NOT NULL REFERENCES users(id),
 	product_id INT NOT NULL REFERENCES products(id),
+	seller_id INT NOT NULL REFERENCES users(id),
 	status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'shipped', 'delivered', 'cancelled')),
 	order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

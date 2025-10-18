@@ -45,7 +45,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiO
 ### Update product (modify product details by ID)
 PATCH http://localhost:3000/products/update
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNjgxMTc5LCJleHAiOjE3NjA2ODQ3Nzl9.mr8WA9sH72BU6OaHbCI2741Ziy9-oq_NzQXD88k8qo4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNzc0MDI1LCJleHAiOjE3NjA3Nzc2MjV9.XR6QNO3lXz8_KIS6c1KFKtM4rDK6DRFYepLh2d81vZc
 
 {
     "id": 10,

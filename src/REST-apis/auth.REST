@@ -22,8 +22,8 @@ Content-Type: application/json
   "name" : "Islam Makhachev",
   "email" : "f20231081@hyderabad.bits-pilani.ac.in",
   "password" : "lily@123",
-  "role" : "wholesaler",
-  "otp" : "905260"
+  "role" : "customer",
+  "otp" : "409342"
 }
 
 ### forgot-password

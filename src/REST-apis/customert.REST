@@ -1,8 +1,27 @@
 ### get all products(retail only for customers)
 GET http://localhost:3000/customers/availableproducts
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJzYXR2aWtzaGFybWEzMTIzQGdtYWlsLmNvbSIsIm5hbWUiOiJDb25vciBNY0dyZWdvciIsInJvbGUiOiJyZXRhaWxlciIsImlhdCI6MTc2MDY4MjU4NywiZXhwIjoxNzYwNjg2MTg3fQ.ZCK6tPEDTP-jdrgwLIoEAIYuP0irjnqivrn4vcy_10o
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzYwNzcyNzk2LCJleHAiOjE3NjA3NzYzOTZ9.FAiuXb4QsglD2BQQkCpJXaEYlJ4nGG6S8erWGZns3fo
 
 {
 
+}
+
+### place order
+POST http://localhost:3000/customers/placeorder
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJmMjAyMzEwODFAaHlkZXJhYmFkLmJpdHMtcGlsYW5pLmFjLmluIiwibmFtZSI6IklzbGFtIE1ha2hhY2hldiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc2MDc3Mzc1NCwiZXhwIjoxNzYwNzc3MzU0fQ.JownQ753f7a95uCF6V1UHSL5M93eNviXMUY6aBbqbbI
+
+{
+    "productId": 18,
+    "quantity": 3
+}
+
+### my orders
+GET http://localhost:3000/customers/orders/5
+Content-Type: application/json  
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJmMjAyMzEwODFAaHlkZXJhYmFkLmJpdHMtcGlsYW5pLmFjLmluIiwibmFtZSI6IklzbGFtIE1ha2hhY2hldiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc2MDc3Mzc1NCwiZXhwIjoxNzYwNzc3MzU0fQ.JownQ753f7a95uCF6V1UHSL5M93eNviXMUY6aBbqbbI
+
+{
+    "customerId": 5
 }
