@@ -6,7 +6,14 @@
 5. RESTful API design principles for structuring the backend services.
 6. Brevo (formerly Sendinblue) for email services, including sending OTPs and notifications.
 7. TODO: OAuth 2.0 for third-party authentication (e.g., Google Sign-In).
-
+8.DB Schema(as of now):
+    1. Global Users Table: stores all users of all 3 types.
+    2. Global Products Table: stores all products added by wholesalers as well as retailers.
+        -can have 2 separate tables, one for wholesalers and one for retailers, but for simplicity, we can have a single table with a field indicating the seller type.
+    3. Orders Table: stores all orders placed by customers and retailers.
+        -can have 2 tables, retail orders and wholesale orders, but for simplicity, we can have a single table with a field indicating the order type.
+    4. wishlist/favorites table: stores all products added to wishlist by customers.(Implementing wishlist only for customers for now, It'll be Inventory management for retailers and wholesalers later).
+    
 
 (i) Auth Flow:
     1. Sign Up request: 
@@ -55,12 +62,4 @@
         which implies the simultaneous existence of 3 different UIs, The names could be same, but since the functionality and business logic requires the 3 different UIs.
 ### Note: since the backend also has 3 separate routes, it will require 3 different frontend routes as well.
 
-(iii) DB Schema(as of now):
-    1. Global Users Table: stores all users of all 3 types.
-    2. Global Products Table: stores all products added by wholesalers as well as retailers.
-        -can have 2 separate tables, one for wholesalers and one for retailers, but for simplicity, we can have a single table with a field indicating the seller type.
-    3. Orders Table: stores all orders placed by customers and retailers.
-        -can have 2 tables, retail orders and wholesale orders, but for simplicity, we can have a single table with a field indicating the order type.
-    4. wishlist/favorites table: stores all products added to wishlist by customers.(Implementing wishlist only for customers for now, It'll be Inventory management for retailers and wholesalers later).
-    
 
