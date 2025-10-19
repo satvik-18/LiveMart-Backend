@@ -28,7 +28,16 @@
         - If they match, the server hashes the password and creates a new user record in NeonDB.
         - 2 JWT tokens (access and refresh) are generated and sent to the user.
     
-    3. Login: (ShaureyaRaj )
+    3. Login:
+        - User sends a POST request to /login/email with email and password.
+        - Server checks if the email exists in NeonDB.
+        - If found, server verifies the password using bcrypt comparison.
+        - If credentials are valid, two JWT tokens are generated:
+            * Access token (expires in 1 hour): contains user ID, email, name, and role
+            * Refresh token (expires in 7 days): contains only user ID
+        - Refresh token is stored in Redis with 7-day expiration
+        - Server sends both tokens along with user details (id, name, email, role)
+        - Frontend should store these tokens securely for subsequent authenticated requests
 
     4. Forgot Password:
         - User sends a POST request to /forgot-password with email.

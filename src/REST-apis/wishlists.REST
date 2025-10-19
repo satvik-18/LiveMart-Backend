@@ -1,0 +1,36 @@
+### Login to get fresh token
+POST http://localhost:3000/auth/login/email
+Content-Type: application/json
+
+{
+    "email": "f20231081@hyderabad.bits-pilani.ac.in",
+    "password": "lily@123"
+}
+
+### Add to wishlist
+POST http://localhost:3000/wishlists/add
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJmMjAyMzEwODFAaHlkZXJhYmFkLmJpdHMtcGlsYW5pLmFjLmluIiwibmFtZSI6IklzbGFtIE1ha2hhY2hldiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc2MDg3MTQ4MCwiZXhwIjoxNzYwODc1MDgwfQ.iVrXMCpOR49nx_st8pVdSGQhBPKpnnc8rFrWRlkW5W0
+
+{
+    "productId": 18
+}
+
+### Remove from wishlist
+DELETE http://localhost:3000/wishlists/remove
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJmMjAyMzEwODFAaHlkZXJhYmFkLmJpdHMtcGlsYW5pLmFjLmluIiwibmFtZSI6IklzbGFtIE1ha2hhY2hldiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc2MDc3Mzc1NCwiZXhwIjoxNzYwNzc3MzU0fQ.JownQ753f7a95uCF6V1UHSL5M93eNviXMUY6aBbqbbI
+
+{
+    "productId": 18
+}
+
+### Get wishlist
+GET http://localhost:3000/wishlists/list
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJmMjAyMzEwODFAaHlkZXJhYmFkLmJpdHMtcGlsYW5pLmFjLmluIiwibmFtZSI6IklzbGFtIE1ha2hhY2hldiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc2MDc3Mzc1NCwiZXhwIjoxNzYwNzc3MzU0fQ.JownQ753f7a95uCF6V1UHSL5M93eNviXMUY6aBbqbbI
+
+### Check if product is in wishlist
+GET http://localhost:3000/wishlists/check/18
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJmMjAyMzEwODFAaHlkZXJhYmFkLmJpdHMtcGlsYW5pLmFjLmluIiwibmFtZSI6IklzbGFtIE1ha2hhY2hldiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc2MDc3Mzc1NCwiZXhwIjoxNzYwNzc3MzU0fQ.JownQ753f7a95uCF6V1UHSL5M93eNviXMUY6aBbqbbI
