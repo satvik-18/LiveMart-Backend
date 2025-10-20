@@ -3,7 +3,7 @@ POST http://localhost:3000/auth/login/email
 Content-Type: application/json
 
 {
-  "email": "f20231081@hyderabad.bits-pilani.ac.in",
+  "email": "satviksharma345@gmail.com",
   "password": "lily@123"
 }
 
