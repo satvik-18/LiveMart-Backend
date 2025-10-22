@@ -72,3 +72,13 @@
 ### Note: since the backend also has 3 separate routes, it will require 3 different frontend routes as well.
 
 
+#### TO DO: 
+
+1. Implement OAuth 2.0 for third-party authentication (e.g., Google Sign-In).Add Location column in users table(An API to fetch closest locations for a particular customer/retailer)
+2. Implement images upload and management for products.(Offline + Online orders for retailers, Calendar integration for wholesalers)
+3. Proxy(Possibly 2 tables for retailers and wholesalers) for inventory management for retailers and wholesalers.Change products.js route.
+4. Orders Tables: Add column offline order, add column delivery details, add expected date of delivery.
+5. Brevo for email OTP after delivery.
+6. Reviews table.
+7. Payment Gateway Integration
+8. Location Services.
