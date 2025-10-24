@@ -79,6 +79,18 @@
 3. Proxy(Possibly 2 tables for retailers and wholesalers) for inventory management for retailers and wholesalers.Change products.js route.
 4. Orders Tables: Add column offline order, add column delivery details, add expected date of delivery.
 5. Brevo for email OTP after delivery.
-6. Reviews table.
+6. Reviews table: IMPLEMENTED ✅
+    - Schema (implemented in `src/scripts/initDB.js`):
+        * id (PK), customer_id (FK -> users.id), product_id (FK -> products.id)
+        * rating INT (1-5), title VARCHAR(255), body TEXT
+        * created_at TIMESTAMP, updated_at TIMESTAMP
+        * UNIQUE(customer_id, product_id) to allow one review per customer per product
+    - Server routes (implemented in `src/routes/reviews.js`):
+        * POST /reviews/add — add or update a review (only customers who purchased the product)
+        * GET /reviews/product/:productId — list reviews for a product
+        * GET /reviews/myreviews — list current user's reviews
+        * PATCH /reviews/update — update own review
+        * DELETE /reviews/delete — delete own review
+    - Notes: reviews are restricted to customers who have purchased the product (checked against `orders` table). Adding a review uses an UPSERT (INSERT ... ON CONFLICT DO UPDATE) so subsequent submissions update the existing review.
 7. Payment Gateway Integration
 8. Location Services.
