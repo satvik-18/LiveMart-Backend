@@ -42,6 +42,18 @@ CREATE TABLE IF NOT EXISTS wishlists(
 	added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE(customer_id, product_id)
 );
+
+CREATE TABLE IF NOT EXISTS reviews(
+	id SERIAL PRIMARY KEY,
+	customer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+	rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+	title VARCHAR(255),
+	body TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	UNIQUE(customer_id, product_id)
+);
 `;
 
 export async function initDB() {

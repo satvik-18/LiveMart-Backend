@@ -7,6 +7,7 @@ import authRoutes from './src/routes/auth.js';
 import productRoutes from './src/routes/products.js';
 import customerRoutes from './src/routes/customers.js';
 import wishlistRoutes from './src/routes/wishlists.js';
+import reviewRoutes from './src/routes/reviews.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -21,6 +22,7 @@ app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/customers', customerRoutes);
 app.use('/wishlists', wishlistRoutes);
+app.use('/reviews', reviewRoutes);
 // Temporary debug endpoint - remove in production
 app.get('/debug/header', (req, res) => {
 	res.json({ authorization: req.headers['authorization'] || null });

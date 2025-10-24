@@ -1,0 +1,41 @@
+### Add or update review (only customers who purchased the product)
+POST http://localhost:3000/reviews/add
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "productId": 18,
+  "rating": 5,
+  "title": "Great product",
+  "body": "Worked exactly as described"
+}
+
+### Get reviews for a product
+GET http://localhost:3000/reviews/product/18
+Content-Type: application/json
+
+### Get my reviews
+GET http://localhost:3000/reviews/myreviews
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+### Update a review
+PATCH http://localhost:3000/reviews/update
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "id": 3,
+  "rating": 4,
+  "title": "Updated title",
+  "body": "Updated body"
+}
+
+### Delete a review
+DELETE http://localhost:3000/reviews/delete
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "id": 3
+}
