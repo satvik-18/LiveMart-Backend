@@ -38,10 +38,15 @@ router.get('/availableproducts', authMiddleware, async (req, res)=>{
     }
 });
 router.post('/placeorder', authMiddleware, async (req, res)=>{
-    const { productId, quantity } = req.body;
+    const { productId, quantity, offlineOrder, deliveryDetails, expectedDeliveryDate } = req.body;
     
     if (!productId || !quantity) {
         return res.status(400).json({ message: 'Product ID and quantity are required' });
+    }
+
+    // Validate expected delivery date if provided
+    if (expectedDeliveryDate && !Date.parse(expectedDeliveryDate)) {
+        return res.status(400).json({ message: 'Invalid expected delivery date format' });
     }
 
     try {
@@ -114,8 +119,15 @@ router.post('/placeorder', authMiddleware, async (req, res)=>{
         // Calculate total price and insert order
         const totalPrice = price * quantity;
         const result = await pool.query(
-            'INSERT INTO orders (customer_id, product_id, quantity, price, seller_id, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', 
-            [req.user.id, productId, quantity, totalPrice, seller_id, 'pending']
+            `INSERT INTO orders (
+                customer_id, product_id, quantity, price, seller_id, status,
+                offline_order, delivery_details, expected_delivery_date
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`, 
+            [
+                req.user.id, productId, quantity, totalPrice, seller_id, 'pending',
+                offlineOrder || false, deliveryDetails || null, 
+                expectedDeliveryDate ? new Date(expectedDeliveryDate) : null
+            ]
         );
         
         return res.status(201).json({
@@ -132,11 +144,48 @@ router.get('/orders/:customerId', authMiddleware, async (req, res)=>{
     const { customerId } = req.params;
 
     try {
-        const result = await pool.query('SELECT * FROM orders WHERE customer_id = $1', [customerId]);
+        // Enhanced query to get more order details including product and seller information
+        const result = await pool.query(`
+            SELECT 
+                o.*,
+                p.name as product_name,
+                p.description as product_description,
+                u.name as seller_name
+            FROM orders o
+            JOIN products p ON o.product_id = p.id
+            JOIN users u ON o.seller_id = u.id
+            WHERE o.customer_id = $1
+            ORDER BY o.order_date DESC
+        `, [customerId]);
+
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'No orders found for this customer' });
         }
-        return res.status(200).json(result.rows);
+
+        // Format the response
+        const formattedOrders = result.rows.map(order => ({
+            orderId: order.id,
+            productInfo: {
+                id: order.product_id,
+                name: order.product_name,
+                description: order.product_description
+            },
+            orderDetails: {
+                quantity: order.quantity,
+                price: order.price,
+                status: order.status,
+                orderDate: order.order_date,
+                isOfflineOrder: order.offline_order,
+                deliveryDetails: order.delivery_details,
+                expectedDeliveryDate: order.expected_delivery_date
+            },
+            sellerInfo: {
+                id: order.seller_id,
+                name: order.seller_name
+            }
+        }));
+
+        return res.status(200).json(formattedOrders);
     } catch (error) {
         console.error('Error fetching orders:', error);
         return res.status(500).json({ message: 'Internal server error' });

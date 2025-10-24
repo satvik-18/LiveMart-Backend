@@ -32,7 +32,10 @@ CREATE TABLE IF NOT EXISTS orders(
 	product_id INT NOT NULL REFERENCES products(id),
 	seller_id INT NOT NULL REFERENCES users(id),
 	status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'shipped', 'delivered', 'cancelled')),
-	order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	offline_order BOOLEAN DEFAULT FALSE,
+	delivery_details TEXT,
+	expected_delivery_date TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS wishlists(
@@ -60,8 +63,23 @@ export async function initDB() {
 	try {
 		await pool.query(createTablesQuery);
 		console.log('Tables created or already exist.');
+		
+		// Add new columns to orders table if they don't exist
+		const alterOrdersTableQuery = `
+			ALTER TABLE orders 
+			ADD COLUMN IF NOT EXISTS offline_order BOOLEAN DEFAULT FALSE;
+			
+			ALTER TABLE orders 
+			ADD COLUMN IF NOT EXISTS delivery_details TEXT;
+			
+			ALTER TABLE orders 
+			ADD COLUMN IF NOT EXISTS expected_delivery_date TIMESTAMP;
+		`;
+		
+		await pool.query(alterOrdersTableQuery);
+		console.log('Orders table columns updated successfully.');
 	} catch (err) {
-		console.error('Error creating tables:', err);
+		console.error('Error creating/updating tables:', err);
 		throw err;
 	}
 }

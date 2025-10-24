@@ -77,7 +77,19 @@
 1. Implement OAuth 2.0 for third-party authentication (e.g., Google Sign-In).Add Location column in users table(An API to fetch closest locations for a particular customer/retailer)
 2. Implement images upload and management for products.(Offline + Online orders for retailers, Calendar integration for wholesalers)
 3. Proxy(Possibly 2 tables for retailers and wholesalers) for inventory management for retailers and wholesalers.Change products.js route.
-4. Orders Tables: Add column offline order, add column delivery details, add expected date of delivery.
+4. Orders Table Updates: IMPLEMENTED ✅
+    - Schema Updates (implemented in `src/scripts/initDB.js`):
+        * Added `offline_order` BOOLEAN column (defaults to FALSE)
+        * Added `delivery_details` TEXT column for delivery information
+        * Added `expected_delivery_date` TIMESTAMP column
+    - API Updates (implemented in `src/routes/customers.js`):
+        * Updated POST `/customers/placeorder` to accept new fields
+        * Enhanced GET `/customers/orders/:customerId` with formatted response
+        * Added validation for delivery date format
+    - Response now includes structured order information with:
+        * Order details including offline/online status
+        * Delivery information and expected delivery date
+        * Product and seller information in a well-organized format
 5. Brevo for email OTP after delivery.
 6. Reviews table: IMPLEMENTED ✅
     - Schema (implemented in `src/scripts/initDB.js`):
