@@ -1,0 +1,91 @@
+### Products API Tests (Updated for Inventory System)
+### Instructions: 
+### 1. Login first using auth.REST to get your JWT token
+### 2. Replace YOUR_JWT_TOKEN_HERE below with your actual token
+### 3. Click "Send Request" above each HTTP method to test
+
+@baseUrl = http://localhost:3000
+@token = YOUR_JWT_TOKEN_HERE
+
+### Get All Products (Role-based filtering)
+# Customers see retailer products, Retailers see wholesaler products
+GET {{baseUrl}}/products/all
+Authorization: Bearer {{token}}
+
+### Get Products by Seller
+GET {{baseUrl}}/products/seller/1
+Authorization: Bearer {{token}}
+
+### Get My Products (For Retailers/Wholesalers)
+GET {{baseUrl}}/products/myproducts
+Authorization: Bearer {{token}}
+
+### Add Product as Retailer
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Laptop Dell XPS 15",
+    "price": 1299.99,
+    "description": "High-performance laptop for professionals",
+    "category": "Electronics",
+    "initial_stock": 25,
+    "reorder_level": 5
+}
+
+### Add Product as Wholesaler
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Bulk Rice Package",
+    "price": 499.99,
+    "description": "25kg bulk rice package",
+    "category": "Groceries",
+    "initial_stock": 500,
+    "minimum_order_quantity": 50
+}
+
+### Add Product with Minimum Values (Wholesaler)
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Office Chairs Bulk",
+    "price": 89.99,
+    "description": "Ergonomic office chairs",
+    "category": "Furniture",
+    "initial_stock": 100,
+    "minimum_order_quantity": 10
+}
+
+### Update Product
+PATCH {{baseUrl}}/products/update/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Updated Product Name",
+    "price": 1499.99,
+    "description": "Updated description",
+    "category": "Electronics"
+}
+
+### Delete Product
+DELETE {{baseUrl}}/products/delete/1
+Authorization: Bearer {{token}}
+
+### Test: Add Product with Low Minimum (Should Fail)
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Test Product",
+    "price": 50,
+    "initial_stock": 100,
+    "minimum_order_quantity": 5
+}

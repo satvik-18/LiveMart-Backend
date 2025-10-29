@@ -1,0 +1,59 @@
+### Retailer Inventory Management API Tests
+
+@baseUrl = http://localhost:3000
+@token = YOUR_JWT_TOKEN_HERE
+
+### Get Retailer's Inventory
+GET {{baseUrl}}/retailers/inventory
+Authorization: Bearer {{token}}
+
+### Update Inventory Stock and Reorder Level
+PATCH {{baseUrl}}/retailers/inventory/update/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity_in_stock": 100,
+  "reorder_level": 20
+}
+
+### Restock Inventory (Add Stock)
+POST {{baseUrl}}/retailers/inventory/restock/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 50
+}
+
+### Get Low Stock Alerts
+GET {{baseUrl}}/retailers/inventory/low-stock
+Authorization: Bearer {{token}}
+
+### Place Wholesale Order (Retailer buying from Wholesaler)
+POST {{baseUrl}}/retailers/order/wholesale
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "product_id": 1,
+      "quantity": 50,
+      "seller_id": 2
+    },
+    {
+      "product_id": 3,
+      "quantity": 100,
+      "seller_id": 2
+    }
+  ]
+}
+
+### Get Retailer's Purchase Orders (from wholesalers)
+GET {{baseUrl}}/retailers/orders/purchases
+Authorization: Bearer {{token}}
+
+### Get Retailer's Sales (to customers)
+GET {{baseUrl}}/retailers/orders/sales
+Authorization: Bearer {{token}}

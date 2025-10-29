@@ -76,16 +76,51 @@
 
 1. Implement OAuth 2.0 for third-party authentication (e.g., Google Sign-In).Add Location column in users table(An API to fetch closest locations for a particular customer/retailer)
 2. Implement images upload and management for products.(Offline + Online orders for retailers, Calendar integration for wholesalers)
-3. Proxy(Possibly 2 tables for retailers and wholesalers) for inventory management for retailers and wholesalers.Change products.js route.
+3. Proxy(Possibly 2 tables for retailers and wholesalers) for inventory management for retailers and wholesalers.Change products.js route. ✅ IMPLEMENTED
+    - Implementation Details:
+        * Created separate `retailer_inventory` and `wholesaler_inventory` tables
+        * Each table tracks stock independently for each seller
+        * Retailer inventory includes `reorder_level` for low-stock alerts
+        * Wholesaler inventory includes `minimum_order_quantity` (minimum 10 units platform-wide, default 25)
+        * Products table refactored to use `seller_id` INTEGER instead of seller VARCHAR
+        * Stock removed from products table, now managed in inventory tables
+        * product_type removed - determined by seller's role
+        * New routes created:
+            - `/retailers/inventory` - manage retailer inventory
+            - `/retailers/order/wholesale` - retailers order from wholesalers
+            - `/retailers/orders/purchases` - view wholesale purchases
+            - `/retailers/orders/sales` - view retail sales
+            - `/wholesalers/inventory` - manage wholesaler inventory
+            - `/wholesalers/orders/sales` - view sales to retailers
+            - `/wholesalers/analytics/sales` - sales analytics
+        * Products routes updated:
+            - `/products/all` - role-based filtering (customers see retailer products, retailers see wholesaler products)
+            - `/products/add` - creates product + inventory atomically with transactions
+            - `/products/myproducts` - shows seller's products with stock and restock alerts
+        * Business Logic Implemented:
+            - Bulk order validation: wholesalers enforce minimum order quantities
+            - Low stock alerts for retailers (quantity_in_stock <= reorder_level)
+            - Transaction-safe product creation (product + inventory created together)
+            - Automatic inventory updates on order placement
+            - Retailers can add stock from wholesaler orders
+        * Database Optimizations:
+            - Indexes added on foreign keys for performance
+            - UNIQUE constraints prevent duplicate inventory entries
+            - CASCADE deletes clean up related data
+        * Constants defined in `src/config/constants.js`
 4. Orders Table Updates: IMPLEMENTED ✅
     - Schema Updates (implemented in `src/scripts/initDB.js`):
         * Added `offline_order` BOOLEAN column (defaults to FALSE)
         * Added `delivery_details` TEXT column for delivery information
         * Added `expected_delivery_date` TIMESTAMP column
+        * Changed `customer_id` to `buyer_id` for generic buyer reference
+        * Added `total_amount` field for order total
+        * Added `order_type` field ('retail' or 'wholesale')
     - API Updates (implemented in `src/routes/customers.js`):
         * Updated POST `/customers/placeorder` to accept new fields
         * Enhanced GET `/customers/orders/:customerId` with formatted response
         * Added validation for delivery date format
+        * Now uses retailer_inventory for stock checks and updates
     - Response now includes structured order information with:
         * Order details including offline/online status
         * Delivery information and expected delivery date

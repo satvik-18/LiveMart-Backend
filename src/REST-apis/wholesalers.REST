@@ -1,0 +1,53 @@
+### Wholesaler Inventory Management API Tests
+
+@baseUrl = http://localhost:3000
+@token = YOUR_JWT_TOKEN_HERE
+
+### Get Wholesaler's Inventory
+GET {{baseUrl}}/wholesalers/inventory
+Authorization: Bearer {{token}}
+
+### Update Inventory Stock and Minimum Order Quantity
+PATCH {{baseUrl}}/wholesalers/inventory/update/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity_in_stock": 1000,
+  "minimum_order_quantity": 50
+}
+
+### Restock Inventory (Add Stock)
+POST {{baseUrl}}/wholesalers/inventory/restock/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 500
+}
+
+### Get Wholesaler's Sales Orders (to retailers)
+GET {{baseUrl}}/wholesalers/orders/sales
+Authorization: Bearer {{token}}
+
+### Get Sales Analytics
+GET {{baseUrl}}/wholesalers/analytics/sales
+Authorization: Bearer {{token}}
+
+### Update Order Status
+PATCH {{baseUrl}}/wholesalers/orders/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "shipped"
+}
+
+### Update Order Status to Delivered
+PATCH {{baseUrl}}/wholesalers/orders/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "delivered"
+}

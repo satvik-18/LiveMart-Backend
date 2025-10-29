@@ -1,0 +1,449 @@
+### Complete Testing Flow - LiveMart Inventory System
+### Follow this file step by step to test the entire system
+
+### STEP 1: Create Wholesaler Account
+### =====================================
+
+### 1.1: Request OTP for Wholesaler
+POST http://localhost:3000/auth/signup/request-otp
+Content-Type: application/json
+
+{
+  "email": "wholesaler-test@livemart.com"
+}
+
+###
+
+### 1.2: Verify OTP and Create Wholesaler (Replace OTP from your email)
+POST http://localhost:3000/auth/signup/verify
+Content-Type: application/json
+
+{
+  "name": "Wholesale Supplies Co",
+  "email": "wholesaler-test@livemart.com",
+  "password": "test123",
+  "role": "wholesaler",
+  "otp": "REPLACE_WITH_YOUR_OTP"
+}
+
+###
+
+### 1.3: Login as Wholesaler (SAVE THE TOKEN!)
+POST http://localhost:3000/auth/login/email
+Content-Type: application/json
+
+{
+  "email": "wholesaler-test@livemart.com",
+  "password": "test123"
+}
+
+###
+
+### STEP 2: Create Retailer Account
+### =====================================
+
+### 2.1: Request OTP for Retailer
+POST http://localhost:3000/auth/signup/request-otp
+Content-Type: application/json
+
+{
+  "email": "retailer-test@livemart.com"
+}
+
+###
+
+### 2.2: Verify OTP and Create Retailer
+POST http://localhost:3000/auth/signup/verify
+Content-Type: application/json
+
+{
+  "name": "Retail Shop Inc",
+  "email": "retailer-test@livemart.com",
+  "password": "test123",
+  "role": "retailer",
+  "otp": "REPLACE_WITH_YOUR_OTP"
+}
+
+###
+
+### 2.3: Login as Retailer (SAVE THE TOKEN!)
+POST http://localhost:3000/auth/login/email
+Content-Type: application/json
+
+{
+  "email": "retailer-test@livemart.com",
+  "password": "test123"
+}
+
+###
+
+### STEP 3: Create Customer Account
+### =====================================
+
+### 3.1: Request OTP for Customer
+POST http://localhost:3000/auth/signup/request-otp
+Content-Type: application/json
+
+{
+  "email": "customer-test@livemart.com"
+}
+
+###
+
+### 3.2: Verify OTP and Create Customer
+POST http://localhost:3000/auth/signup/verify
+Content-Type: application/json
+
+{
+  "name": "John Customer",
+  "email": "customer-test@livemart.com",
+  "password": "test123",
+  "role": "customer",
+  "otp": "REPLACE_WITH_YOUR_OTP"
+}
+
+###
+
+### 3.3: Login as Customer (SAVE THE TOKEN!)
+POST http://localhost:3000/auth/login/email
+Content-Type: application/json
+
+{
+  "email": "customer-test@livemart.com",
+  "password": "test123"
+}
+
+###
+
+### ========================================
+### PASTE YOUR TOKENS HERE:
+### ========================================
+@baseUrl = http://localhost:3000
+@wholesalerToken = PASTE_WHOLESALER_TOKEN_HERE
+@retailerToken = PASTE_RETAILER_TOKEN_HERE
+@customerToken = PASTE_CUSTOMER_TOKEN_HERE
+
+###
+
+### STEP 4: Wholesaler Adds Products
+### =====================================
+
+### 4.1: Add Bulk Rice Product
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "name": "Premium Rice Bags - 25kg",
+  "price": 45.00,
+  "description": "High quality bulk rice for retailers",
+  "category": "Groceries",
+  "initial_stock": 1000,
+  "minimum_order_quantity": 50
+}
+
+###
+
+### 4.2: Add Bulk Wheat Product
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "name": "Wheat Flour Bags - 20kg",
+  "price": 35.00,
+  "description": "Wholesale wheat flour",
+  "category": "Groceries",
+  "initial_stock": 800,
+  "minimum_order_quantity": 40
+}
+
+###
+
+### 4.3: View Wholesaler Inventory
+GET {{baseUrl}}/wholesalers/inventory
+Authorization: Bearer {{wholesalerToken}}
+
+###
+
+### 4.4: View Wholesaler Products
+GET {{baseUrl}}/products/myproducts
+Authorization: Bearer {{wholesalerToken}}
+
+###
+
+### STEP 5: Retailer Views and Orders from Wholesaler
+### =====================================
+
+### 5.1: Retailer Views Available Products (Should see only wholesaler products)
+GET {{baseUrl}}/products/all
+Authorization: Bearer {{retailerToken}}
+
+###
+
+### 5.2: Retailer Places Bulk Order (Replace product_id and seller_id from above response)
+POST {{baseUrl}}/retailers/order/wholesale
+Authorization: Bearer {{retailerToken}}
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "product_id": 1,
+      "quantity": 100,
+      "seller_id": 2
+    }
+  ]
+}
+
+###
+
+### 5.3: View Retailer Inventory (Should show the rice)
+GET {{baseUrl}}/retailers/inventory
+Authorization: Bearer {{retailerToken}}
+
+###
+
+### 5.4: View Retailer Purchase Orders
+GET {{baseUrl}}/retailers/orders/purchases
+Authorization: Bearer {{retailerToken}}
+
+###
+
+### STEP 6: Retailer Adds Retail Products
+### =====================================
+
+### 6.1: Add Retail Rice Product
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{retailerToken}}
+Content-Type: application/json
+
+{
+  "name": "Premium Rice - 5kg Pack",
+  "price": 12.50,
+  "description": "Quality rice for home use",
+  "category": "Groceries",
+  "initial_stock": 50,
+  "reorder_level": 15
+}
+
+###
+
+### 6.2: Add Retail Wheat Product
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{retailerToken}}
+Content-Type: application/json
+
+{
+  "name": "Whole Wheat Flour - 2kg",
+  "price": 8.00,
+  "description": "Fresh wheat flour",
+  "category": "Groceries",
+  "initial_stock": 30,
+  "reorder_level": 10
+}
+
+###
+
+### 6.3: View Retailer Products
+GET {{baseUrl}}/products/myproducts
+Authorization: Bearer {{retailerToken}}
+
+###
+
+### STEP 7: Customer Views and Orders from Retailer
+### =====================================
+
+### 7.1: Customer Views Available Products (Should see only retailer products)
+GET {{baseUrl}}/customers/availableproducts
+Authorization: Bearer {{customerToken}}
+
+###
+
+### 7.2: Customer Places Order (Replace productId from above response)
+POST {{baseUrl}}/customers/placeorder
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "productId": 3,
+  "quantity": 5,
+  "offlineOrder": false,
+  "deliveryDetails": "123 Test Street, Test City, TC 12345",
+  "expectedDeliveryDate": "2025-11-05"
+}
+
+###
+
+### 7.3: Customer Views Order History (Replace YOUR_CUSTOMER_ID with actual customer ID from login response)
+GET {{baseUrl}}/customers/orders/YOUR_CUSTOMER_ID
+Authorization: Bearer {{customerToken}}
+
+###
+
+### STEP 8: Test Business Logic Validations
+### =====================================
+
+### 8.1: TEST - Order Below Minimum (Should FAIL with error)
+POST {{baseUrl}}/retailers/order/wholesale
+Authorization: Bearer {{retailerToken}}
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "product_id": 1,
+      "quantity": 5,
+      "seller_id": 2
+    }
+  ]
+}
+
+###
+
+### 8.2: TEST - Customer Tries to Add Product (Should FAIL)
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "price": 100,
+  "initial_stock": 10
+}
+
+###
+
+### 8.3: TEST - Add Product with Low Minimum (Should FAIL)
+POST {{baseUrl}}/products/add
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "price": 50,
+  "initial_stock": 100,
+  "minimum_order_quantity": 5
+}
+
+###
+
+### STEP 9: Test Inventory Management
+### =====================================
+
+### 9.1: Retailer Updates Reorder Level
+PATCH {{baseUrl}}/retailers/inventory/update/3
+Authorization: Bearer {{retailerToken}}
+Content-Type: application/json
+
+{
+  "reorder_level": 20
+}
+
+###
+
+### 9.2: Retailer Checks Low Stock Items
+GET {{baseUrl}}/retailers/inventory/low-stock
+Authorization: Bearer {{retailerToken}}
+
+###
+
+### 9.3: Retailer Restocks Product
+POST {{baseUrl}}/retailers/inventory/restock/3
+Authorization: Bearer {{retailerToken}}
+Content-Type: application/json
+
+{
+  "quantity": 25
+}
+
+###
+
+### 9.4: Wholesaler Views Sales
+GET {{baseUrl}}/wholesalers/orders/sales
+Authorization: Bearer {{wholesalerToken}}
+
+###
+
+### 9.5: Wholesaler Views Analytics
+GET {{baseUrl}}/wholesalers/analytics/sales
+Authorization: Bearer {{wholesalerToken}}
+
+###
+
+### 9.6: Retailer Views Sales to Customers
+GET {{baseUrl}}/retailers/orders/sales
+Authorization: Bearer {{retailerToken}}
+
+###
+
+### STEP 10: Advanced Tests
+### =====================================
+
+### 10.1: Wholesaler Updates Product Price
+PATCH {{baseUrl}}/products/update/1
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "price": 47.50,
+  "description": "Premium quality bulk rice - Price Updated!"
+}
+
+###
+
+### 10.2: Wholesaler Updates Minimum Order Quantity
+PATCH {{baseUrl}}/wholesalers/inventory/update/1
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "minimum_order_quantity": 60
+}
+
+###
+
+### 10.3: Wholesaler Restocks
+POST {{baseUrl}}/wholesalers/inventory/restock/1
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "quantity": 500
+}
+
+###
+
+### 10.4: Wholesaler Updates Order Status
+PATCH {{baseUrl}}/wholesalers/orders/1/status
+Authorization: Bearer {{wholesalerToken}}
+Content-Type: application/json
+
+{
+  "status": "shipped"
+}
+
+###
+
+### ========================================
+### TESTING COMPLETE! 🎉
+### ========================================
+### 
+### Verify the following worked:
+### ✅ 3 users created with different roles
+### ✅ Wholesaler added products with bulk minimums
+### ✅ Retailer ordered from wholesaler (bulk)
+### ✅ Retailer inventory increased
+### ✅ Wholesaler inventory decreased
+### ✅ Retailer added retail products
+### ✅ Customer ordered from retailer
+### ✅ Retailer inventory decreased
+### ✅ Business rules enforced (min quantity, role access)
+### ✅ Low stock alerts working
+### ✅ Analytics showing data
+### 
+### Next: Check database to verify stock updates!
+### Run: SELECT * FROM retailer_inventory;
+### Run: SELECT * FROM wholesaler_inventory;
+### Run: SELECT * FROM orders;
+###

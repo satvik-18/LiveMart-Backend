@@ -5,30 +5,30 @@ const router = express.Router();
 import pool from '../config/database.js';
 import {authMiddleware} from '../middleware/authmiddleware.js';
 
-router.get('/availableproducts', authMiddleware, async (req, res)=>{
-    try{
-        let productType;
-        
-        // Determine what products the user can see based on role
-        if (req.user.role === 'customer') {
-            productType = 'retail';
-        } else if (req.user.role === 'retailer') {
-            productType = 'wholesale';
-        } else if (req.user.role === 'wholesaler') {
+// Get available products for customers (only retail products from retailers)
+router.get('/availableproducts', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'customer') {
             return res.status(403).json({
-                message: 'Wholesalers cannot order products. You are a supplier only.'
+                message: 'This endpoint is for customers only'
             });
-        } else {
-            return res.status(403).json({message: 'Invalid user role'});
         }
         
-        const result = await pool.query(
-            'SELECT * FROM products WHERE product_type = $1', 
-            [productType]
-        );
+        const result = await pool.query(`
+            SELECT 
+                p.*,
+                ri.quantity_in_stock as stock,
+                u.name as seller_name,
+                u.email as seller_email
+            FROM products p
+            JOIN users u ON p.seller_id = u.id
+            JOIN retailer_inventory ri ON p.id = ri.product_id AND p.seller_id = ri.retailer_id
+            WHERE u.role = 'retailer' AND ri.quantity_in_stock > 0
+            ORDER BY p.created_at DESC
+        `);
         
-        if(result.rows.length === 0){
-            return res.status(404).json({message: 'No products found'});
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: 'No products available'});
         }
         
         return res.status(200).json(result.rows);
@@ -37,11 +37,17 @@ router.get('/availableproducts', authMiddleware, async (req, res)=>{
         return res.status(500).json({message: 'Internal server error'});
     }
 });
-router.post('/placeorder', authMiddleware, async (req, res)=>{
+
+// Place order (customers buying from retailers)
+router.post('/placeorder', authMiddleware, async (req, res) => {
     const { productId, quantity, offlineOrder, deliveryDetails, expectedDeliveryDate } = req.body;
     
     if (!productId || !quantity) {
         return res.status(400).json({ message: 'Product ID and quantity are required' });
+    }
+
+    if (quantity <= 0) {
+        return res.status(400).json({ message: 'Quantity must be greater than 0' });
     }
 
     // Validate expected delivery date if provided
@@ -49,112 +55,113 @@ router.post('/placeorder', authMiddleware, async (req, res)=>{
         return res.status(400).json({ message: 'Invalid expected delivery date format' });
     }
 
+    const client = await pool.connect();
     try {
-        // Check if wholesaler is trying to order
-        if (req.user.role === 'wholesaler') {
+        // Check user role
+        if (req.user.role !== 'customer') {
             return res.status(403).json({ 
-                message: 'Wholesalers cannot place orders. You are a supplier only.' 
+                message: 'Only customers can place retail orders' 
             });
         }
+
+        await client.query('BEGIN');
         
-        // Get product details AND seller info in one query
-        const productResult = await pool.query(`
-            SELECT p.price, p.stock, p.product_type, p.seller, u.id as seller_id, u.role as seller_role
+        // Get product details with seller info and stock from retailer_inventory
+        const productResult = await client.query(`
+            SELECT 
+                p.id, p.price, p.name, p.seller_id,
+                ri.quantity_in_stock,
+                u.name as seller_name, u.role as seller_role
             FROM products p
-            JOIN users u ON p.seller = u.name
+            JOIN retailer_inventory ri ON p.id = ri.product_id AND p.seller_id = ri.retailer_id
+            JOIN users u ON p.seller_id = u.id
             WHERE p.id = $1
         `, [productId]);
         
         if (productResult.rows.length === 0) {
-            return res.status(404).json({ message: 'Product not found' });
+            throw new Error('Product not found or not available from any retailer');
         }
         
-        const { price, stock, product_type, seller, seller_id, seller_role } = productResult.rows[0];
+        const { price, seller_id, seller_role, quantity_in_stock, name } = productResult.rows[0];
         
-        // Validate supply chain rules
-        if (req.user.role === 'customer' && product_type !== 'retail') {
-            return res.status(403).json({ 
-                message: 'Customers can only order retail products' 
-            });
-        }
-        
-        if (req.user.role === 'retailer' && product_type !== 'wholesale') {
-            return res.status(403).json({ 
-                message: 'Retailers can only order wholesale products' 
-            });
-        }
-        
-        // Additional check: Ensure seller role matches product type
-        if (product_type === 'wholesale' && seller_role !== 'wholesaler') {
-            return res.status(400).json({ 
-                message: 'Invalid product: wholesale products must be sold by wholesalers' 
-            });
-        }
-        
-        if (product_type === 'retail' && seller_role !== 'retailer') {
-            return res.status(400).json({ 
-                message: 'Invalid product: retail products must be sold by retailers' 
-            });
+        // Validate seller is a retailer
+        if (seller_role !== 'retailer') {
+            throw new Error('Customers can only order from retailers');
         }
         
         // Check stock availability
-        if (stock < quantity) {
-            return res.status(400).json({ message: 'Insufficient stock' });
+        if (quantity_in_stock < quantity) {
+            throw new Error(`Insufficient stock. Available: ${quantity_in_stock}, Requested: ${quantity}`);
         }
         
         // Prevent ordering from yourself
         if (req.user.id === seller_id) {
-            return res.status(400).json({ 
-                message: 'You cannot order from yourself' 
-            });
+            throw new Error('You cannot order from yourself');
         }
         
-        // Update stock
-        const newStock = stock - quantity;
-        await pool.query(
-            'UPDATE products SET stock = $1 WHERE id = $2', 
-            [newStock, productId]
-        );
+        // Update retailer inventory
+        await client.query(`
+            UPDATE retailer_inventory
+            SET quantity_in_stock = quantity_in_stock - $1,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE product_id = $2 AND retailer_id = $3
+        `, [quantity, productId, seller_id]);
 
         // Calculate total price and insert order
-        const totalPrice = price * quantity;
-        const result = await pool.query(
+        const totalPrice = parseFloat(price) * quantity;
+        const orderResult = await client.query(
             `INSERT INTO orders (
-                customer_id, product_id, quantity, price, seller_id, status,
-                offline_order, delivery_details, expected_delivery_date
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`, 
+                buyer_id, seller_id, product_id, quantity, price, total_amount,
+                order_type, status, offline_order, delivery_details, expected_delivery_date
+            ) VALUES ($1, $2, $3, $4, $5, $6, 'retail', 'pending', $7, $8, $9) RETURNING *`, 
             [
-                req.user.id, productId, quantity, totalPrice, seller_id, 'pending',
+                req.user.id, seller_id, productId, quantity, price, totalPrice,
                 offlineOrder || false, deliveryDetails || null, 
                 expectedDeliveryDate ? new Date(expectedDeliveryDate) : null
             ]
         );
         
+        await client.query('COMMIT');
+        
         return res.status(201).json({
             message: 'Order placed successfully',
-            order: result.rows[0]
+            order: {
+                ...orderResult.rows[0],
+                product_name: name
+            }
         });
         
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Error placing order:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(400).json({ message: error.message || 'Internal server error' });
+    } finally {
+        client.release();
     }
 });
-router.get('/orders/:customerId', authMiddleware, async (req, res)=>{
+
+// Get customer's orders
+router.get('/orders/:customerId', authMiddleware, async (req, res) => {
     const { customerId } = req.params;
 
     try {
+        // Verify the customer is requesting their own orders
+        if (req.user.id !== parseInt(customerId) && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized access' });
+        }
+
         // Enhanced query to get more order details including product and seller information
         const result = await pool.query(`
             SELECT 
                 o.*,
                 p.name as product_name,
                 p.description as product_description,
-                u.name as seller_name
+                u.name as seller_name,
+                u.email as seller_email
             FROM orders o
             JOIN products p ON o.product_id = p.id
             JOIN users u ON o.seller_id = u.id
-            WHERE o.customer_id = $1
+            WHERE o.buyer_id = $1 AND o.order_type = 'retail'
             ORDER BY o.order_date DESC
         `, [customerId]);
 
@@ -173,6 +180,7 @@ router.get('/orders/:customerId', authMiddleware, async (req, res)=>{
             orderDetails: {
                 quantity: order.quantity,
                 price: order.price,
+                totalAmount: order.total_amount,
                 status: order.status,
                 orderDate: order.order_date,
                 isOfflineOrder: order.offline_order,
@@ -181,7 +189,8 @@ router.get('/orders/:customerId', authMiddleware, async (req, res)=>{
             },
             sellerInfo: {
                 id: order.seller_id,
-                name: order.seller_name
+                name: order.seller_name,
+                email: order.seller_email
             }
         }));
 
@@ -191,7 +200,5 @@ router.get('/orders/:customerId', authMiddleware, async (req, res)=>{
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
-
-//To Order a product
 
 export default router;
